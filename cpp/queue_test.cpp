@@ -40,5 +40,18 @@ int main(int argc, char** argv) {
     cout << "Queue contents: " << endl;
     q(coutf);
     cout << endl;
+
+    int curPop = q.pop();
+    cout << "Queue: popped element " << curPop << endl;
+
+    try {
+        for (int i = 0; i < MAX_SIZE + 1; ++i) {
+            q.push(i);
+        }
+    }
+    catch (exception& e) {
+        cerr << e.what() << endl;
+    }
+
     return 0;
 }
