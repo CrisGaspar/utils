@@ -1,34 +1,43 @@
 #include <iostream>
-#include "queue.h"
+#include "bounded_queue.h"
 
 using namespace efficient;
 
 int main(int argc, char** argv) {
-    int count = 100;
-    queue<int> q(count);
+    bounded_queue<int> q;
 
+    int count = 3;
     for (int i = 0; i < 2 * count; ++i) {
-        q.enqueue(i);
+        q.push(i);
     }
 
     for (int i = 0; i < 2 * count; ++i) {
-        cout << q.dequeue() << " ";
+        cout << q.pop() << " ";
     }
     cout << endl;
 
-    auto coutf = [](int32_t& n) { cout << "n=" << n << " "; };
+    auto coutf = [](int32_t& n) { cout << n << " "; };
     q(coutf);
     cout << endl;
 
     for (int i = 0; i < 2 * count; ++i) {
-        q.enqueue(i);
-        q.enqueue(2*i);
-        q.enqueue(3*i);
-        cout << q.dequeue() << " ";
+        q.push(i);
+        q.push(2*i);
+        q.push(3*i);
+        cout << q.pop() << " ";
     }
     cout << endl;
 
+    auto doubleit = [](int32_t& n) { n = 2 * n; };
+    auto dec = [](int32_t& n) { --n; };
+
     cout << "Queue size: " << q.size() << endl;
+    cout << "Queue contents: " << endl;
+    // chained function application
+    q(coutf)(doubleit)(dec);
+    cout << endl;
+
+    cout << "Queue contents: " << endl;
     q(coutf);
     cout << endl;
     return 0;
