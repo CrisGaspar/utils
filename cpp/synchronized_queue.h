@@ -9,18 +9,21 @@ namespace efficient {
     const int32_t INVALID_IDX = -1; 
     const uint32_t MAX_SIZE = 1024 * 1024;
 
-    // Bounded queue with composable/chainable functional application
-    template<class T>
-    class bounded_queue {
+    // Synchronized bounded queue with composable/chainable functional application
+    template<class T, class Lock>
+    class synchronized_queue {
         T* data;
+        Lock l;
+        typedef lock_guard<Lock> LockGuard;
         int32_t first = INVALID_IDX;
         int32_t last = INVALID_IDX;
         uint32_t maxsz = MAX_SIZE;
+        int32_t sz = 0;
 
         void push_util() {
-            if (size() == maxsz) {
+            if (sz == maxsz) {
                 // cannot accomodate
-                throw logic_error("BoundedQueue: already at max capacity");
+                throw logic_error("SynchronizedQueue: already at max capacity");
             }
 
             if (first == INVALID_IDX) {
@@ -30,44 +33,44 @@ namespace efficient {
             else {
                 last = (last + 1) % maxsz;            
             }
+            ++sz;
         }
 
      public:
-        bounded_queue(const uint32_t max = MAX_SIZE) : maxsz(max) {  data = new T[maxsz]; }
-        ~bounded_queue() { delete[] data; }
+        synchronized_queue(const uint32_t max = MAX_SIZE) : maxsz(max) {  data = new T[maxsz]; }
+        ~synchronized_queue() { delete[] data; }
      
         int32_t size() const { 
-            if (first == INVALID_IDX || last == INVALID_IDX) {
-                return 0;
-            }
-
-            return (last >= first) ? (last - first) + 1 : (maxsz - first) + (last + 1);  
+            return sz;
         }
         
         void push(T&& elem) {
+            LockGuard g(l);
             push_util();
             data[last] = move(elem);
         }
 
         void push(const T& elem) {
+            LockGuard g(l);
             push_util();
             data[last] = elem;
         }
 
+
         T pop() {
-            int32_t qSize = size();
-            if (qSize == 0) {
+            if (sz == 0) {
                 throw logic_error("Queue: can't pop empty queue!");
             }
 
             int32_t idx = first;
-            if (qSize == 1)
+            if (sz == 1)
             {
                 first = last = INVALID_IDX;
             }
             else { 
                 first = (first + 1) % maxsz;            
             }
+            --sz;
 
             return move(data[idx]);
         }
@@ -80,12 +83,13 @@ namespace efficient {
 
         // Application of composable functions
         template<class UnaryFunction>
-        bounded_queue<T>& operator()(UnaryFunction f) {
-            if (size() == 0) {
+        synchronized_queue<T, Lock>& operator()(UnaryFunction f) {
+            if (sz == 0) {
                 cout << "Empty queue: nothing to apply!" << endl;
                 return *this;
             }
 
+            LockGuard g(l);
             for (int32_t i = first; i != last; i = (i + 1) % maxsz) {
                 f(data[i]);
             }
