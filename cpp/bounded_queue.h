@@ -6,7 +6,7 @@
 using namespace std;
 
 namespace efficient {
-    const int32_t INVALID_IDX = -1; 
+    const int32_t INVALID_IDX = -1;
     const uint32_t MAX_SIZE = 1024 * 1024;
 
     // Bounded queue with composable/chainable functional application
@@ -28,22 +28,22 @@ namespace efficient {
                 first = last = 0;
             }
             else {
-                last = (last + 1) % maxsz;            
+                last = (last + 1) % maxsz;
             }
         }
 
      public:
         bounded_queue(const uint32_t max = MAX_SIZE) : maxsz(max) {  data = new T[maxsz]; }
         ~bounded_queue() { delete[] data; }
-     
-        int32_t size() const { 
+
+        int32_t size() const {
             if (first == INVALID_IDX || last == INVALID_IDX) {
                 return 0;
             }
 
-            return (last >= first) ? (last - first) + 1 : (maxsz - first) + (last + 1);  
+            return (last >= first) ? (last - first) + 1 : (maxsz - first) + (last + 1);
         }
-        
+
         void push(T&& elem) {
             push_util();
             data[last] = move(elem);
@@ -65,15 +65,15 @@ namespace efficient {
             {
                 first = last = INVALID_IDX;
             }
-            else { 
-                first = (first + 1) % maxsz;            
+            else {
+                first = (first + 1) % maxsz;
             }
 
             return move(data[idx]);
         }
 
         void clear() {
-            while(first != INVALID_IDX) { 
+            while(first != INVALID_IDX) {
                 pop();
             }
         }

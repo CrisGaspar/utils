@@ -6,7 +6,7 @@
 using namespace std;
 
 namespace efficient {
-    const int32_t INVALID_IDX = -1; 
+    const int32_t INVALID_IDX = -1;
     const uint32_t MAX_SIZE = 1024 * 1024;
 
     // Synchronized bounded queue with composable/chainable functional application
@@ -31,7 +31,7 @@ namespace efficient {
                 first = last = 0;
             }
             else {
-                last = (last + 1) % maxsz;            
+                last = (last + 1) % maxsz;
             }
             ++sz;
         }
@@ -39,11 +39,11 @@ namespace efficient {
      public:
         synchronized_queue(const uint32_t max = MAX_SIZE) : maxsz(max) {  data = new T[maxsz]; }
         ~synchronized_queue() { delete[] data; }
-     
-        int32_t size() const { 
+
+        int32_t size() const {
             return sz;
         }
-        
+
         void push(T&& elem) {
             LockGuard g(l);
             push_util();
@@ -67,8 +67,8 @@ namespace efficient {
             {
                 first = last = INVALID_IDX;
             }
-            else { 
-                first = (first + 1) % maxsz;            
+            else {
+                first = (first + 1) % maxsz;
             }
             --sz;
 
@@ -76,7 +76,7 @@ namespace efficient {
         }
 
         void clear() {
-            while(first != INVALID_IDX) { 
+            while(first != INVALID_IDX) {
                 pop();
             }
         }
