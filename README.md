@@ -1,6 +1,7 @@
 # utils
 Utilities
-* C++:
+
+* C++
   - bounded_queue.h: cache-efficient implementation using array. Has chainable functions support.
   - syncronized_queue.h: synchronized bounded queue. Clients specify the Mutex type they need.
   - queue_test.cpp: functional tests for queue
@@ -12,3 +13,7 @@ Utilities
     create/insert/find/delete operations.
   - bst_test.cpp: functional test for binary search tree: both primitive type (int) and custom type (eg: Spaceship class)
   - array_bst.h: cache-efficient array-based binary search tree implementation
+
+* Scala
+  - proxy.scala: connects to a source S via TCP and forwards all packets received
+    from S to all of its currently connected client
