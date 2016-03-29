@@ -74,3 +74,6 @@ class Source extends Actor {
     }
 }
 
+// TODO: 
+// 1. Implement Source Generator and Client actors
+// 2. Perf test to determine max msg/sec rate
