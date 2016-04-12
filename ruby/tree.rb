@@ -1,23 +1,32 @@
+require 'set'
+
 class TreeNode
     attr_accessor :val, :left, :right 
-    attr_reader :visited
+    attr_reader :id
+
+    @@id = 0
+
+    def self.nextid
+        @@id += 1
+        @@id
+    end
 
     def initialize(val: nil, left: nil, right: nil, vals: [])
         @val, @left, @right = val, left, right
-        @visited = false
-        self.build_tree(vals: vals)
+        @id = TreeNode.nextid
+        build_tree(vals: vals)
     end
 
-    // TODO: private
-    def build_tree(vals: [])
+    def build_tree(vals: vals)
         vals.each do |val|
-            self.insert(val) 
+            insert(val) 
         end
     end
 
-    // TODO: private
     def insert(val)
+        puts("Val: #{val}")
         if @val.nil?
+            # empty tree
             @val = val
             return
         elsif @val == val
@@ -39,48 +48,58 @@ class TreeNode
 
     def in_order(func)
         @left.in_order(func) unless @left.nil?
-        func(self)
+        func.call(self)
         @right.in_order(func) unless @right.nil?
     end
 
     def pre_order(func)
-        func(self)
-        @left.in_order(func) unless @left.nil?
-        @right.in_order(func) unless @right.nil?
-
+        func.call(self)
+        @left.pre_order(func) unless @left.nil?
+        @right.pre_order(func) unless @right.nil?
     end
 
     def post_order(func)
-        @left.in_order(func) unless @left.nil?
-        @right.in_order(func) unless @right.nil?
-        func(self)
+        @left.post_order(func) unless @left.nil?
+        @right.post_order(func) unless @right.nil?
+        func.call(self)
     end
 
     def bfs(func)
+        visited = Set.new
         nodes = []
-        nodes << self unless @visited
-        nodes << @left unless @left.nil? or @left.visited
-        nodes << @right unless @right.nil? or @right.visited
+        nodes << self unless visited.include?(self.id)
+        nodes << @left unless @left.nil? or visited.include?(@left.id)
+        nodes << @right unless @right.nil? or visited.include?(@right.id)
 
-        while nodes. do
+        while !nodes.empty? do
             cur_node = nodes.shift
-            func(cur_node) unless cur_node.visited?
-            cur_node.visited = true
-            nodes << cur_node.left unless cur_node.left.nil? or cur_node.left.visited?
-            nodes << cur_node.right unless cur_node.right.nil? or cur_node.right.visited?
+            func.call(cur_node) unless visited.include?(cur_node.id)
+            visited.add(cur_node.id)
+            nodes << cur_node.left unless cur_node.left.nil? or visited.include?(cur_node.left.id)
+            nodes << cur_node.right unless cur_node.right.nil? or visited.include?(cur_node.right.id)
         end
     end
 
-    def dfs(func)
-        @left.dfs(func) unless @left.nil? or @left.visited
-        @rigth.dfs(func) unless @right.nil? or @right.visited
-        unless @visited 
-            func(self)
-            @visited = true
+    def dfs(func, visited = Set.new)
+        @left.dfs(func) unless @left.nil? or visited.include?(@left.id)
+        @right.dfs(func) unless @right.nil? or visited.include?(@right.id)
+        unless visited.include?(self.id) 
+            func.call(self)
+            visited.add(self.id)
         end
-    end 
+    end
 end
 
-t = TreeNode.new(vals: [1, -1, 0, 10, 8, 2, 9, 5])
+vals = [1, -1, 0, 10, 8, 2, 9, 5]
+t = TreeNode.new(vals: vals)
 print_node = lambda { |node| puts(node.val) }
+
 t.in_order(print_node)
+
+t.pre_order(print_node)
+
+t.post_order(print_node)
+
+t.bfs(print_node)
+
+t.dfs(print_node)
