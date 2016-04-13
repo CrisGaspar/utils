@@ -82,7 +82,7 @@ namespace efficient {
         template<class UnaryFunction>
         bounded_queue<T>& operator()(UnaryFunction f) {
             if (size() == 0) {
-                cout << "Empty queue: nothing to apply!" << endl;
+                // Empty queue: nothing to apply!
                 return *this;
             }
 
