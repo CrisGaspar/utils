@@ -81,8 +81,8 @@ class TreeNode
     end
 
     def dfs(func, visited = Set.new)
-        @left.dfs(func) unless @left.nil? or visited.include?(@left.id)
-        @right.dfs(func) unless @right.nil? or visited.include?(@right.id)
+        @left.dfs(func, visited) unless @left.nil? or visited.include?(@left.id)
+        @right.dfs(func, visited) unless @right.nil? or visited.include?(@right.id)
         unless visited.include?(self.id) 
             func.call(self)
             visited.add(self.id)
@@ -95,11 +95,7 @@ t = TreeNode.new(vals: vals)
 print_node = lambda { |node| puts(node.val) }
 
 t.in_order(print_node)
-
 t.pre_order(print_node)
-
 t.post_order(print_node)
-
 t.bfs(print_node)
-
 t.dfs(print_node)
