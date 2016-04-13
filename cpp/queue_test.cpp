@@ -33,7 +33,11 @@ int main(int argc, char** argv) {
 
     cout << "Queue size: " << q.size() << endl;
     cout << "Queue contents: " << endl;
-    // chained function application
+
+    /*
+    ** NOTE: This is pretty cool!
+    ** Chained Function Application
+    */
     q(coutf)(doubleit)(dec);
     cout << endl;
 
