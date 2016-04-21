@@ -1,43 +1,57 @@
 class TicTacToe:
-    def __init(dim, userPlayer = 1):
-        _initialize(dim, userPlayer)
-    
-    def _intialize(dim, userPlayer):
+    board = {}
+    dim = 0
+    size = 0
+    maxsize = 0
+    symbols = ['X', '0']
+    players = [symbols[0], symbols[1]]
+    user_player = 1
+
+    def __init__(self, dim, user_player=1):
+        self._initialize(dim, user_player)
+
+    def _initialize(self, dim, user_player):
         self.board = {}
         self.dim = dim
-        self.maxsize = self.dim * self.dim
         self.size = 0
-        self.symbols = ['X', '0']
-        self.players = [self.symbols[0], self.symbols[1]]
-        self.userPlayer = userPlayer
+        self.maxsize = self.dim * self.dim
+        self.user_player = user_player
 
-    def resetGame(dim, userPlayer):
-       _initialize(dim, userPlayer) 
+    def reset_game(self, dim, user_player):
+        self._initialize(dim, user_player)
 
-    def move(index, ch):
-        # check types of index and ch are int and char
-        #if (type(index)
+    def move(self, index, ch):
+        """
+
+        :type index: int
+        """
         if ch not in self.symbols:
-            throw "Character " + ch + " not an accepted symbol"
+            raise ValueError("Character " + ch + " not an accepted symbol")
 
-        if index not a int:
-            throw "Index not an integer"
-        
+        if isinstance(index, int):
+            raise TypeError("Index not an integer")
+
         if index < 0 or index >= self.maxsize:
-            throw "Index not within bounds"
+            raise ValueError("Index not within bounds")
 
-        if !board.try_set(index, ch):
-            throw ""
+        if index not in self.board:
+            self.board[index] = ch
+            raise ValueError("Already have a move at this location")
 
         # success
         self.size += 1
 
-    def move(index, player):
+    def move(self, index, player):
         if player >= 1 and player <= self.players.size:
-            move(index, self.players[player-1]
+            self.move(index, self.players[player-1])
         else:
-            throw ""
+            raise ValueError("Index out of bounds. Move aborted")
 
     def run():
-        
-        
+        print("Running...")
+
+
+
+if __name__ == "__main__":
+    game = TicTacToe(3)
+    game.run
