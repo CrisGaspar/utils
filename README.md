@@ -13,6 +13,9 @@ Utilities
     create/insert/find/delete operations.
   - bst_test.cpp: functional test for binary search tree: both primitive type (int) and custom type (eg: Spaceship class)
   - array_bst.h: cache-efficient array-based binary search tree implementation
+  - kDistanceDuplicates.cpp: finding matrix duplicates that are at most k positions apart
+  - matrixRotation.cpp: rotate a matrix clockwise by 1 position for each element
+  - value-semantics.cpp: Adobe implementation of a container of hetergenenous objects useful for full undo functionality
 
 * Scala
   - proxy.scala: connects to a source S via TCP and forwards all packets received
@@ -20,8 +23,13 @@ Utilities
 
 * Ruby
   - tree.rb: binary search tree implementation
+  - todo.rb: TODO app
+
+* Python
+  - tictactoe.py: n x n TicTacToe game
 
 Exercises
 * C++: cpp/exercises
   - rover.*: rover game implementation: 2D integer grid navigation with simple 'f' forward, 'l' turn-left, and 'r' turn-right commands
     Usage: rover2 <-t filename> | Use -t filename to run in test mode on the given file. Use no parameters to run interactive mode
+  - filter.cpp: simple filtering example using lambdas
