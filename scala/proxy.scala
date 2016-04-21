@@ -1,4 +1,7 @@
 import scala.collections.mutable.*
+import java.net.Socket
+import java.net.ServerSocket
+
 
 case class Data(b: byte[], cnt: Int) {
     byte[] buf = b
@@ -54,7 +57,7 @@ class Source extends Actor {
 
     Source(myProxy: Proxy, port: Int)
 
-    def read = {
+    def run = {
         Socket s = socket.connect()
         // new client connected to proxy
         proxy ! Data()
