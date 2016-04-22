@@ -2,8 +2,8 @@ class TicTacToe:
     board = {}
     dim = 0
     size = 0
-    maxsize = 0
-    symbols = ['X', '0']
+    max_size = 0
+    symbols = ['X', 'O']
     players = [symbols[0], symbols[1]]
     user_player = 1
 
@@ -14,43 +14,38 @@ class TicTacToe:
         self.board = {}
         self.dim = dim
         self.size = 0
-        self.maxsize = self.dim * self.dim
+        self.max_size = self.dim * self.dim
         self.user_player = user_player
 
     def reset_game(self, dim, user_player):
         self._initialize(dim, user_player)
 
-    def move(self, index, ch):
-        """
+    def get_char(self, index):
+        return self.board[index]
 
-        :type index: int
-        """
+    def set_char(self, index, ch):
         if ch not in self.symbols:
-            raise ValueError("Character " + ch + " not an accepted symbol")
+            raise ValueError("Character {} not an accepted symbol".format(ch))
 
-        if isinstance(index, int):
-            raise TypeError("Index not an integer")
-
-        if index < 0 or index >= self.maxsize:
+        if index < 0 or index >= self.max_size:
             raise ValueError("Index not within bounds")
 
         if index not in self.board:
             self.board[index] = ch
+        else:
             raise ValueError("Already have a move at this location")
 
         # success
         self.size += 1
 
-    def move(self, index, player):
-        if player >= 1 and player <= self.players.size:
-            self.move(index, self.players[player-1])
+    def set(self, index, player):
+        if 1 <= player <= len(self.players):
+            self.set_char(index, self.players[player-1])
         else:
-            raise ValueError("Index out of bounds. Move aborted")
+            raise ValueError('Invalid player: number of players is {}'.format(len(self.players)))
 
     def run():
-        print("Running...")
-
-
+        print "Running..."
 
 if __name__ == "__main__":
     game = TicTacToe(3)
