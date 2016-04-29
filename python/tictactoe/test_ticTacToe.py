@@ -46,22 +46,21 @@ class TestTicTacToe(TestCase):
     def test_reset_game(self):
         t = TicTacToe(3)
         dim = 5
-        user = 2
-        t.reset_game(dim, user)
-        self.assertTrue(t.board == {} and t.dim == dim
-                        and t.size == 0 and t.max_size == dim * dim
-                        and t.user_player == user)
+        t.reset_game(dim)
+        self.assertTrue(t.board == [' ' for i in range(dim*dim)] and t.dim == dim
+                        and t.size == 0 and t.max_size == dim * dim)
+
     def test_run(self):
         t = TicTacToe(3)
         t.run
 
     def test_set(self):
         t = TicTacToe(3)
-        t.set(5, 1)
-        t.set(3, 2)
+        t.set(2, 3, 0)
+        t.set(2, 1, 1)
         self.assertTrue(t.get_char(5) == 'X' and t.get_char(3) == 'O')
 
     def test_set_invalid_player(self):
         t = TicTacToe(3)
         with self.assertRaises(ValueError):
-            t.set(5, 3)
+            t.set(2, 3, 2)
