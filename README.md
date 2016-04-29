@@ -26,6 +26,9 @@ Utilities
 
 * Python
   - tictactoe.py: n x n TicTacToe game
+  - test_ticTacToe.py: TicTacToe unit tests - full coverage
+  - supermarket.py: basic checkout with laddered price discounts
+  - test_product.py and test_checkout.py: unit tests
 
 Exercises
 * C++: cpp/exercises
