@@ -30,6 +30,9 @@ Utilities
   - supermarket.py: basic checkout with laddered price discounts
   - test_product.py and test_checkout.py: unit tests
 
+* Java
+  - TicTacToe.java: best move search implementation
+
 Exercises
 * C++: cpp/exercises
   - filter.cpp: simple filtering example using lambdas
