@@ -31,7 +31,8 @@ Utilities
   - test_product.py and test_checkout.py: unit tests
 
 * Java
-  - TicTacToe.java: best move search implementation
+  - TicTacToe.java: best move implementation
+  - Parentheses.java: checks if parentheses in a string are balanced
 
 Exercises
 * C++: cpp/exercises
