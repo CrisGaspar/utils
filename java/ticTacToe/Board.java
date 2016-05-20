@@ -6,14 +6,15 @@ import java.util.stream.IntStream;
 /**
  * Created by crisoti on 02/05/16.
  */
+@SuppressWarnings("Convert2MethodRef")
 public class Board {
-    public enum Player { NOT_SET, PLAYER_1, PLAYER_2};
+    public enum Player { NOT_SET, PLAYER_1, PLAYER_2}
 
     private int dim = 3;
     private Player[][] positions = new Player[dim][dim];
     private static Random generator = new Random();
 
-    public Board() {
+    private Board() {
         reset();
     }
 
@@ -28,6 +29,12 @@ public class Board {
     }
 
     public Board clone() {
+        try {
+            super.clone();
+        }
+        catch(Exception e) {
+            e.printStackTrace(System.err);
+        }
         Board b = new Board();
         b.setBoard(positions);
         return b;
@@ -36,8 +43,8 @@ public class Board {
     private void setBoard(Player[][] source) {
         dim = source.length;
         positions = Arrays.stream(source)
-                .map((Player[] row) -> row.clone())
-                .toArray( (int length) -> new Player[length][]);
+                .map(Player[]::clone)
+                .toArray( (int length) ->new Player[length][]);
     }
 
     public int getDim() {
@@ -108,7 +115,6 @@ public class Board {
     }
 
     private Integer horizontalScore(Player currentPlayer) {
-        Integer score = null;
         for (int x = 0; x < dim; ++x) {
             // row i
             Player p = positions[x][0];
@@ -125,11 +131,10 @@ public class Board {
                 }
             }
         }
-        return score;
+        return null;
     }
 
     private Integer verticalScore(Player currentPlayer) {
-        Integer score = null;
         for (int y = 0; y < dim; ++y) {
             // row i
             Player p = positions[0][y];
@@ -145,12 +150,10 @@ public class Board {
                 }
             }
         }
-        return score;
+        return null;
     }
 
     private Integer diagonalScore(Player currentPlayer) {
-        Integer score = null;
-
         Player p = positions[0][0];
         if (p != Player.NOT_SET) {
             int x;
@@ -179,11 +182,11 @@ public class Board {
             }
         }
 
-        return score;
+        return null;
     }
 
     public Integer computeMatchScore(Player currentPlayer) {
-        Integer score = null;
+        Integer score;
         score = horizontalScore(currentPlayer);
         if (score == null) {
             score = verticalScore(currentPlayer);
@@ -229,7 +232,7 @@ public class Board {
     private static ArrayList<Board> getPossibleBoards(Board board, Player p) {
         int dim = board.getDim();
         // list of all possible board configurations after 1 move
-        ArrayList<Board> possibleConfigurations = new ArrayList<Board>();
+        ArrayList<Board> possibleConfigurations = new ArrayList<>();
         IntStream.range(0, dim * dim).forEach(
                 n -> {
                     int x = n / dim;
@@ -255,7 +258,6 @@ public class Board {
         ArrayList<Board> possibleNextConfigurations = getPossibleBoards(board, p);
 
         final Player nextPlayer = Board.getNextPlayer(p);
-        Board bestConfiguration = null;
         ArrayList<Board> bestConfigs = new ArrayList<>();
         int maxScore = Integer.MIN_VALUE;
 
@@ -289,8 +291,6 @@ public class Board {
                 bestConfigs.add(b);
             }
         }
-        int otionsNum = bestConfigs.size();
-
         return bestConfigs.get(generator.nextInt(bestConfigs.size()));
     }
 
@@ -307,7 +307,12 @@ public class Board {
 
         Board bestConfiguration = Board.bestMove(board, Player.PLAYER_2);
         System.out.println("Player 1's best move:");
-        bestConfiguration.print();
+        if (bestConfiguration != null) {
+            bestConfiguration.print();
+        }
+        else {
+            System.err.println("Game over. No more moves");
+        }
 
 
         board = new Board();
