@@ -48,8 +48,8 @@ public class Checkout {
         if (id == 100001L) {
             return new Product(id, 1.99);
         }
-        System.err.println("Create discount failed: unsupported product ID" +  id);
-        return null;
+
+        throw new NoSuchElementException("Create discount failed: unsupported product ID" +  id);
     }
 
     private HashMap<Long, Product>  createProductsByID() {
@@ -84,7 +84,7 @@ public class Checkout {
             discountsForID.add(new Discount(productID, 10, 0.99));
         }
         else {
-            System.err.println("Create discount failed: unsupported product ID" + productID);
+            throw new NoSuchElementException("Create discount failed: unsupported product ID" + productID);
         }
         discountsForID.sort((Discount d1, Discount d2) -> d2.getQuantity() - d1.getQuantity());
         return discountsForID;
