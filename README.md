@@ -39,3 +39,9 @@ Exercises
   - filter.cpp: simple filtering example using lambdas
   - rover.*: rover game implementation: 2D integer grid navigation with simple 'f' forward, 'l' turn-left, and 'r' turn-right commands
     Usage: rover2 <-t filename> | Use -t filename to run in test mode on the given file. Use no parameters to run interactive mode
+* Python: python/exercises
+  - balanced.py: balanced parentheses checker
+  - closestRGB.py: RGB closest base color (RGB+Black+White) finder  
+  - compress.py: length-based string encoding
+
+
