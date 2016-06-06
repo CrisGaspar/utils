@@ -29,6 +29,7 @@ Utilities
   - test_ticTacToe.py: TicTacToe unit tests - full coverage
   - supermarket.py: basic checkout with laddered price discounts
   - test_product.py and test_checkout.py: unit tests
+  - cryptoparser.py: HTTP crypto header parser
 
 * Java
   - TicTacToe.java: best move implementation
