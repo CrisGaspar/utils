@@ -5,7 +5,10 @@ from os.path import isfile, join
 
 
 class RoverException(Exception):
-    pass
+    def __init__(self, msg):
+        self.msg = msg
+    def __str__(self):
+        return "Unexpected: " + self.msg
 
 class Rover:
     """ Single rover representation"""
@@ -151,7 +154,6 @@ def run_test(filename_pair, test_num):
     print(test_header + "Running Rover Explorer using rover data from {}".format(input_filename))
     print(test_header + "Relaying rover commands to Mars. Please wait...")
 
-    err_msg = test_header + "Houston we have a problem!"
     try:
         success = exploration.run()
         expected_positions = exploration.get_expected_final_positions(expected_results_filename)
@@ -159,21 +161,21 @@ def run_test(filename_pair, test_num):
         for rover in exploration.rovers:
             expected_position = expected_positions[rover.id-1]
             if rover.position != expected_position:
-                msg += "Rovers {} final position {} differs from its expected position {}\n" \
+                msg += "Rover {} final position {} differs from its expected position {}\n" \
                     .format(rover.id, rover.position, expected_position)
 
         if len(msg) == 0:
             if success:
                 msg = test_header + "Successfully deployed and executed all rover commands! Open the champagne."
-            else:
-                msg = err_msg + " A rover exception was triggered during exploration"
+                print(msg)
+            # As long the final positions match the expected position, we consider this a pass.
+            # The rover is smart enough that any move that cause errors/exceptions will not be performed
+            success = True
         else:
             success = False
-            msg = err_msg + '\n' + msg
-        print(msg)
+            print(msg)
     except RoverException as e:
         success = False
-        print(err_msg)
         print(e)
     finally:
         return success
