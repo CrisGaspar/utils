@@ -44,5 +44,8 @@ Exercises
   - balanced.py: balanced parentheses checker
   - closestRGB.py: RGB closest base color (RGB+Black+White) finder  
   - compress.py: length-based string encoding
+  - rover.py: rover implementation
+  - test_rover.py and rover_functional*.py: rover tests
+  - mergesort.py and test_mergesort.py
 
 
