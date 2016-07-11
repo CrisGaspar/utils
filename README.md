@@ -13,7 +13,7 @@ Utilities
   - queue_test_perf.cpp: performance test comparing against std::queue
   - syncronized_queue.h: synchronized bounded queue. Clients specify the Mutex type they need.
   - synchronized_queue_test.cpp: multiple threads using the synchronized queue
-    clang++ -std=c++11 -pthread synchronized_queue_test.cpp
+    clang++ -std=c++14 -pthread -g synchronized_queue_test.cpp -o synchronized_queue_test
   - value-semantics.cpp: Adobe implementation of a container of hetergenenous objects - useful for full undo functionality
 
 * Scala

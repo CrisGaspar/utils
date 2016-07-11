@@ -6,13 +6,13 @@
 using namespace efficient;
 
 int main(int argc, char** argv) {
-    synchronized_queue<int, mutex> q;
+    SynchronizedQueue<int, mutex> queue;
 
-    auto playWithQueue = [&q] () {
+    auto playWithQueue = [&queue] () {
         for (int i = 0; i < 10000; ++i) {
-            q.push(i);
-            q.push(2*i);
-            q.pop();
+            queue.enqueue(i);
+            queue.enqueue(2*i);
+            queue.dequeue();
         }
     };
 
@@ -23,14 +23,13 @@ int main(int argc, char** argv) {
         threads[j] = thread(playWithQueue);
     }
 
-
     for (int j = 0; j < threadNum; ++j) {
         threads[j].join();
     }
     cout << "Threads finished! Queue contents" << endl;
 
     auto coutf = [](int32_t& n) { cout << n << " "; };
-    q(coutf);
+    queue(coutf);
     cout << endl;
     return 0;
 }
