@@ -111,8 +111,8 @@ namespace efficient {
         }
 
         /* 
-         * Allows application of composable functions that are applied to 
-         * each element in the queue
+         * Overload operator() to support application of composable functions 
+         * that are applied to each element in the queue
          * E.g: f could be a cout-like lambda function that prints the element it is given
          * Returns this queue to allow calls to be composed
          * e.g: queue(f1)(f2) which would apply function f1 to the elements
