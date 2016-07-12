@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 #include <mutex>
 #include <thread>
@@ -8,7 +9,7 @@ using namespace efficient;
 int main(int argc, char** argv) {
     SynchronizedQueue<int, mutex> queue;
 
-    // Use a lambda function to define the operations performed on the same
+    // Use a lambda to define the operations performed on the same
     // queue by each thread separately
     auto playWithQueue = [&queue] () {
         for (int i = 0; i < 10000; ++i) {
@@ -23,7 +24,7 @@ int main(int argc, char** argv) {
     vector<thread> threads;
     threads.reserve(threadNum);
     for (int j = 0; j < threadNum; ++j) {
-        // Setup each thread to execute the lamba function that performs the
+        // Setup each thread to execute the lambda function that performs the
         // queue operations
         threads[j] = thread(playWithQueue);
     }
@@ -40,6 +41,26 @@ int main(int argc, char** argv) {
     // Double the value of each queue item and output the final state.
     // Lambdas are applied to each item using the overloaded operator().
     queue(doubleIt)(coutf);
+    cout << endl;
+
+    // Now let's test copying via clone.
+    // Reset and do some queue operations
+    queue.clear();
+    queue.enqueue(10);
+    queue.enqueue(20);
+    queue.enqueue(30);
+    queue.dequeue();
+    queue.dequeue();
+    queue.enqueue(40);
+    cout << "Source queue items to copied: ";
+    queue(coutf);
+    cout << endl;
+
+    SynchronizedQueue<int, mutex> copyQueue(MAX_SIZE, queue.clone());
+    assert(copyQueue.clone() == queue.clone());
+    // output copied queue items
+    cout << "Copied queue items: ";
+    copyQueue(coutf);
     cout << endl;
     return 0;
 }

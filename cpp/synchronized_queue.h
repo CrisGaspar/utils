@@ -14,10 +14,12 @@ namespace efficient {
     template<class T, class Lock>
     class SynchronizedQueue {
     private:
-        unique_ptr<T[]> mData;
-        Lock mLock; ///< mutex for synchronized access to the queue 
+        unique_ptr<T[]> mData;  ///< fixed sized array that holds the queue items
+                                // Fixed size is used to maximize cache efficiency
+                                // hence guaranteeing very fast enqueue/dequeue
+        Lock mLock;             ///< mutex for synchronized access to the queue
 
-        // Using STL lock_guard to achieve RAII with mutex 
+        // Using STL lock_guard to achieve RAII with mutex
         typedef lock_guard<Lock> LockGuard;
 
         // We keep track of the beginning and end of the queue with mFirstIndex
@@ -33,9 +35,9 @@ namespace efficient {
         int32_t mMaxSize = 0;   ///< maximum size of the queue
 
         /*
-         * Utility function to enqueue an item
+         * Enqueue and dequeue helper methods
          */
-        void enqueue_util() {
+        void enqueue_nolock() {
             if (mSize == mMaxSize) {
                 // cannot accomodate new element
                 throw logic_error("SynchronizedQueue: already at max capacity");
@@ -52,35 +54,7 @@ namespace efficient {
             ++mSize;
         }
 
-     public:
-        // For efficiency reasons we pre-allocate an array for the elements
-        SynchronizedQueue(const uint32_t maxSize = MAX_SIZE) : mMaxSize(maxSize) { mData = make_unique<T[]>(mMaxSize); }
-        ~SynchronizedQueue() { }
-
-        int32_t size() const {
-            LockGuard guard(mLock);
-            return mSize;
-        }
-
-        /*
-         * An enqueue for Rvalue references: for efficiency reasons
-         */
-        void enqueue(T&& elem) {
-            LockGuard guard(mLock);
-            enqueue_util();
-
-            // Use STL move to steal the contents of the rvalue
-            mData[mLastIndex] = move(elem);
-        }
-
-        void enqueue(const T& elem) {
-            LockGuard guard(mLock);
-            enqueue_util();
-            mData[mLastIndex] = elem;
-        }
-
-
-        T dequeue() {
+        T dequeue_nolock() {
             if (mSize == 0) {
                 throw logic_error("Queue: can't dequeue empty queue!");
             }
@@ -100,18 +74,105 @@ namespace efficient {
             return move(mData[index]);
         }
 
+     public:
+        /*
+         * Constructor can optionally load a batch of items in the intial queue.
+         * e.g.: copying a queue's data to perform other actions on the same items
+         * auto copies = otherQueue.clone();
+         * SynchronizedQueue copiesQueue(copies);
+         */
+        SynchronizedQueue(
+                const uint32_t maxSize = MAX_SIZE,
+                const vector<T>& items = vector<T>()
+                ) : mMaxSize(maxSize) {
+            mData = make_unique<T[]>(mMaxSize);
+            for (const auto& item: items) {
+                enqueue(item);
+            }
+        }
+
+        ~SynchronizedQueue() { clear(); }
+
+        /*
+         * Delete copy and move constructor and assignment.
+         * This is to avoid deadlocks.
+         * Any of these operations would have to acquire both the lock of the
+         * left-hand-side object and right-hand-side objects.
+         * If 2 different threads are executing each:
+         * q1 = q2
+         * and
+         * q2 = q1
+         * Deadlock would occur as each would hold its own lock and block on
+         * the other's lock indefinitely
+         *
+         * Instead if the items need to be copied use the clone() method
+         * below to get a vector<T> of item copies and use the regular constructor
+         * auto copies = otherQueue.clone();
+         * SynchronizedQueue copiesQueue(copies);
+         *
+         */
+
+        // copy constructor
+        SynchronizedQueue(const SynchronizedQueue<T, Lock>& other) = delete;
+        // move constructor
+        SynchronizedQueue(SynchronizedQueue<T, Lock>&& other) = delete;
+
+        // copy assignment
+        SynchronizedQueue& operator=(SynchronizedQueue<T, Lock>& other) = delete;
+        // move assignment
+        SynchronizedQueue& operator=(SynchronizedQueue<T, Lock>&& other) = delete;
+
+        /*
+         * Clone returns a vector of copies of the items in the queue
+         */
+        vector<T> clone() {
+            vector<T> copiedValues;
+            copiedValues.reserve(size());
+
+            // Create a lambda copy function to insert into copied Values and
+            // apply it to all items in queue via overloaded operator()
+            this->operator()([&copiedValues](const T& item) { copiedValues.push_back(item); });
+            return copiedValues;
+        }
+
+        int32_t size() const {
+            return mSize;
+        }
+
+        /*
+         * An enqueue for Rvalue references: for efficiency reasons
+         */
+        void enqueue(T&& elem) {
+            LockGuard guard(mLock);
+            enqueue_nolock();
+
+            // Use STL move to steal the contents of the rvalue
+            mData[mLastIndex] = move(elem);
+        }
+
+        void enqueue(const T& elem) {
+            LockGuard guard(mLock);
+            enqueue_nolock();
+            mData[mLastIndex] = elem;
+        }
+
+        T dequeue() {
+            LockGuard guard(mLock);
+            return dequeue_nolock();
+        }
 
         /*
          * Pops all elements off the qeueue
          */
         void clear() {
+            LockGuard guard(mLock);
             while(mFirstIndex != INVALID_INDEX) {
-                dequeue();
+                dequeue_nolock();
             }
         }
 
-        /* 
-         * Overload operator() to support application of composable functions 
+        /*
+         * Overload operator() to support application of composable functions
          * that are applied to each element in the queue
          * E.g: f could be a cout-like lambda function that prints the element it is given
          * Returns this queue to allow calls to be composed
