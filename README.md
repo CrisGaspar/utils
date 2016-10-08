@@ -2,7 +2,6 @@
 Utilities
 
 * C++
-  - array_bst.h: cache-efficient array-based binary search tree implementation
   - bounded_queue.h: cache-efficient implementation using array. Has chainable functions support.
   - bst.h: node-based binary search tree implementation with a twist: the element type T can specify
     what Key type is to be used for comparisons. Keys are computed on create/insert/find/delete operations.
