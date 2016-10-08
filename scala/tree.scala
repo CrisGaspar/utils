@@ -1,3 +1,0 @@
-//
-// Add Scala Tree implementation
-//
