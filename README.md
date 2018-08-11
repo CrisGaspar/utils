@@ -17,5 +17,3 @@ Utilities
   - proxy.scala: connects to a source S via TCP and forwards all packets received
     from S to all of its currently connected clients
 
-* Ruby
-  - tree.rb: binary search tree implementation
