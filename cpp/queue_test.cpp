@@ -3,6 +3,7 @@
 
 using namespace efficient;
 
+/* Tests bounded queue functionlity */
 int main(int argc, char** argv) {
     bounded_queue<int> q;
 
