@@ -11,9 +11,4 @@ Utilities
   - syncronized_queue.h: synchronized bounded queue. Clients specify the Mutex type they need.
   - synchronized_queue_test.cpp: multiple threads using the synchronized queue
     clang++ -std=c++14 -pthread -g synchronized_queue_test.cpp -o synchronized_queue_test
-  - value-semantics.cpp: implementation by Adobe of a container of heterogenenous objects - useful for full undo functionality
-
-* Scala
-  - proxy.scala: connects to a source S via TCP and forwards all packets received
-    from S to all of its currently connected clients
 
