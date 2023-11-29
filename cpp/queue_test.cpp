@@ -2,6 +2,7 @@
 #include "bounded_queue.h"
 
 using namespace efficient;
+using namespace std;
 
 /* Tests bounded queue functionlity */
 int main(int argc, char** argv) {

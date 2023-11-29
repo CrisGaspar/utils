@@ -3,7 +3,6 @@
 #include <cinttypes>
 #include <stdexcept>
 
-using namespace std;
 
 namespace efficient {
     const int32_t INVALID_INDEX = -1;
@@ -24,7 +23,7 @@ namespace efficient {
         void updateIndicesForNewElement() {
             if (size() == maxSize) {
                 // no room left
-                throw logic_error("BoundedQueue: No room for new element. Already at max capacity");
+                throw std::logic_error("BoundedQueue: No room for new element. Already at max capacity");
             }
 
             if (first == INVALID_INDEX) {
@@ -55,7 +54,7 @@ namespace efficient {
         */
         void push(T&& elem) {
             updateIndicesForNewElement();
-            data[last] = move(elem);
+            data[last] = std::move(elem);
         }
 
         /** 
@@ -72,7 +71,7 @@ namespace efficient {
         T pop() {
             int32_t queueSize = size();
             if (queueSize == 0) {
-                throw logic_error("BoundedQueue: Nothing to pop. Empty queue!");
+                throw std::logic_error("BoundedQueue: Nothing to pop. Empty queue!");
             }
 
             // Oldest elemnent is the first one.
@@ -88,7 +87,7 @@ namespace efficient {
             }
 
             // Use move semantics to return the element
-            return move(data[index]);
+            return std::move(data[index]);
         }
 
 
