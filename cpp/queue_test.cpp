@@ -4,55 +4,59 @@
 using namespace efficient;
 using namespace std;
 
-/* Tests bounded queue functionlity */
+/* Tests for bounded queue implementation */
 int main(int argc, char** argv) {
-    bounded_queue<int> q;
+    bounded_queue<int> queue;
 
     int count = 3;
-    for (int i = 0; i < 2 * count; ++i) {
-        q.push(i);
+    for (int index = 0; index < 2 * count; ++index) {
+        queue.push(index);
     }
 
-    for (int i = 0; i < 2 * count; ++i) {
-        cout << q.pop() << " ";
-    }
-    cout << endl;
-
-    auto coutf = [](int32_t& n) { cout << n << " "; };
-    q(coutf);
-    cout << endl;
-
-    for (int i = 0; i < 2 * count; ++i) {
-        q.push(i);
-        q.push(2*i);
-        q.push(3*i);
-        cout << q.pop() << " ";
+    for (int index = 0; index < 2 * count; ++index) {
+        cout << queue.pop() << " ";
     }
     cout << endl;
 
-    auto doubleit = [](int32_t& n) { n = 2 * n; };
-    auto dec = [](int32_t& n) { --n; };
+    /** Print function to be applied to elements in the queue */
+    auto printFunc = [](int32_t& value) { cout << value << " "; };
 
-    cout << "Queue size: " << q.size() << endl;
+    queue(printFunc);
+    cout << endl;
+
+    for (int index = 0; index < 2 * count; ++index) {
+        queue.push(index);
+        queue.push(2*index);
+        queue.push(3*index);
+        cout << queue.pop() << " ";
+    }
+    cout << endl;
+
+    /** Function to double a given value*/
+    auto doubleFunc = [](int32_t& value) { value = 2 * value; };
+
+    /** Function to decrement by 1 the given value*/
+    auto decrementFunc = [](int32_t& value) { --value; };
+
+    cout << "Queue size: " << queue.size() << endl;
     cout << "Queue contents: " << endl;
 
     /*
-    ** NOTE: This is pretty cool!
-    ** Chained Function Application
+    ** Apply a series of functions to each element in the queue.
     */
-    q(coutf)(doubleit)(dec);
+    queue(printFunc)(doubleFunc)(decrementFunc);
     cout << endl;
 
     cout << "Queue contents: " << endl;
-    q(coutf);
+    queue(printFunc);
     cout << endl;
 
-    int curPop = q.pop();
-    cout << "Queue: popped element " << curPop << endl;
+    int poppedValue = queue.pop();
+    cout << "Queue: popped element " << poppedValue << endl;
 
     try {
-        for (int i = 0; i < QUEUE_MAX_SIZE_DEFAULT + 1; ++i) {
-            q.push(i);
+        for (int index = 0; index < QUEUE_MAX_SIZE_DEFAULT + 1; ++index) {
+            queue.push(index);
         }
     }
     catch (exception& e) {
