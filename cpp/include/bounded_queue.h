@@ -123,5 +123,21 @@ namespace efficient {
             // Return reference to self for chaining
             return *this;
         }
+
+        /** Non-const array-index operator*/
+        T& operator[](size_t index) {
+            if (index >= size()) {
+                throw std::out_of_range("Index out of range");
+            }
+            return data[(first + index) % maxSize];
+        }
+
+        /** Const array-index operator*/
+        const T& operator[](size_t index) const {
+            if (index >= size()) {
+                throw std::out_of_range("Index out of range");
+            }
+            return data[(first + index) % maxSize];
+        }
     };
 }

@@ -1,67 +1,120 @@
+#include <gtest/gtest.h>
 #include <iostream>
 #include "../include/bounded_queue.h"
 
 using namespace efficient;
 using namespace std;
 
-/* Tests for bounded queue implementation */
-int main(int argc, char** argv) {
+/** Function doubles a given value*/
+auto doubleFunc = [](int32_t& value) { value = 2 * value; };
+
+/** Function decrements by 1 the given value*/
+auto decrementFunc = [](int32_t& value) { --value; };
+
+TEST(BoundedQueueTest, PushTest) {
+    bounded_queue<int> queue;
+    int values[] = {1, -2, 3, -4, 5, 6, 0};
+    std::for_each (std::begin(values), std::end(values), [&queue](int value) {
+        queue.push(value);
+    });
+
+    EXPECT_EQ(queue.size(), std::size(values));
+
+    size_t index = 0;
+    std::for_each (std::begin(values), std::end(values), [&queue, &index](int value) {
+        EXPECT_EQ(queue[index], value);
+        ++index;
+    });
+}
+
+TEST(BoundedQueueTest, PopTest) {
+    bounded_queue<int> queue;
+    int values[] = {1, -2, 3, -4, 5, 6, 0};
+    std::for_each (std::begin(values), std::end(values), [&queue](int value) {
+        queue.push(value);
+    });
+
+    std::for_each (std::begin(values), std::end(values), [&queue](int value) {
+        auto poppedValue = queue.pop();
+        EXPECT_EQ(poppedValue, value);
+    });
+    EXPECT_EQ(queue.size(), 0);
+}
+
+TEST(BoundedQueueTest, ClearTest) {
+    bounded_queue<int> queue;
+    int values[] = {1, -2, 3, -4, 5, 6, 0};
+    std::for_each (std::begin(values), std::end(values), [&queue](int value) {
+        queue.push(value);
+    });
+
+    queue.clear();
+    EXPECT_EQ(queue.size(), 0);
+}
+
+TEST(BoundedQueueTest, PopEmptyQueueTest) {
+    bounded_queue<int> queue;
+    ASSERT_THROW(queue.pop(), std::logic_error);
+}
+
+TEST(BoundedQueueTest, PushTooManyTest) {
+    int values[] = {1, -2, 3, -4, 5, 6, 0};
+    bounded_queue<int> queue(std::size(values));
+
+    std::for_each (std::begin(values), std::end(values), [&queue](int value) {
+        queue.push(value);
+    });
+
+    // Push 1 more beyond the queue max size
+    ASSERT_THROW(queue.push(0), std::logic_error);
+}
+
+
+TEST(BoundedQueueTest, OutOfBoundsIndexTest) {
+    int values[] = {1, -2, 3, -4, 5, 6, 0};
     bounded_queue<int> queue;
 
-    int count = 3;
-    for (int index = 0; index < 2 * count; ++index) {
-        queue.push(index);
-    }
+    std::for_each (std::begin(values), std::end(values), [&queue](int value) {
+        queue.push(value);
+    });
 
-    for (int index = 0; index < 2 * count; ++index) {
-        cout << queue.pop() << " ";
-    }
-    cout << endl;
+    ASSERT_THROW(queue[std::size(values)], std::logic_error);
+}
 
-    /** Print function to be applied to elements in the queue */
-    auto printFunc = [](int32_t& value) { cout << value << " "; };
+TEST(BoundedQueueTest, ValidIndexTest) {
+    int values[] = {1, -2, 3, -4, 5, 6, 0};
+    bounded_queue<int> queue;
 
-    queue(printFunc);
-    cout << endl;
+    std::for_each (std::begin(values), std::end(values), [&queue](int value) {
+        queue.push(value);
+    });
 
-    for (int index = 0; index < 2 * count; ++index) {
-        queue.push(index);
-        queue.push(2*index);
-        queue.push(3*index);
-        cout << queue.pop() << " ";
-    }
-    cout << endl;
+    auto index = 3;
+    EXPECT_EQ(queue[index], values[index]);
+}
 
-    /** Function to double a given value*/
-    auto doubleFunc = [](int32_t& value) { value = 2 * value; };
+TEST(BoundedQueueTest, AppplyChainedFunctionsTest) {
+    int values[] = {1, -2, 3, -4, 5, 6, 0};
+    bounded_queue<int> queue;
 
-    /** Function to decrement by 1 the given value*/
-    auto decrementFunc = [](int32_t& value) { --value; };
+    std::for_each (std::begin(values), std::end(values), [&queue](int value) {
+        queue.push(value);
+    });
 
-    cout << "Queue size: " << queue.size() << endl;
-    cout << "Queue contents: " << endl;
+    // Apply a series of functions to each element in the queue.
+    queue(doubleFunc)(decrementFunc);
 
-    /*
-    ** Apply a series of functions to each element in the queue.
-    */
-    queue(printFunc)(doubleFunc)(decrementFunc);
-    cout << endl;
+    EXPECT_EQ(queue.size(), std::size(values));
 
-    cout << "Queue contents: " << endl;
-    queue(printFunc);
-    cout << endl;
+    auto index = 0;
+    std::for_each (std::begin(values), std::end(values), [&queue, &index](int value) {
+        EXPECT_EQ(queue[index], 2* value - 1);
+        ++index;
+    });
+}
 
-    int poppedValue = queue.pop();
-    cout << "Queue: popped element " << poppedValue << endl;
 
-    try {
-        for (int index = 0; index < QUEUE_MAX_SIZE_DEFAULT + 1; ++index) {
-            queue.push(index);
-        }
-    }
-    catch (exception& e) {
-        cerr << e.what() << endl;
-    }
-
-    return 0;
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
