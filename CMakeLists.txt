@@ -13,5 +13,11 @@ find_package(GTest REQUIRED)
 # Add the executable
 add_executable(BoundedQueueTest cpp/tests/queue_test.cpp)
 
+# Enable testing
+enable_testing()
+
+# Add the test
+add_test(NAME BoundedQueueTest COMMAND BoundedQueueTest)
+
 # Link the GoogleTest and pthread library to the executable
 target_link_libraries(BoundedQueueTest GTest::GTest GTest::Main pthread)
