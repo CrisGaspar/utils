@@ -1,0 +1,17 @@
+cmake_minimum_required(VERSION 3.10)
+
+# Set the project name
+project(BoundedQueueTest)
+
+# Specify the C++ standard
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# Find the GoogleTest package
+find_package(GTest REQUIRED)
+
+# Add the executable
+add_executable(BoundedQueueTest cpp/tests/queue_test.cpp)
+
+# Link the GoogleTest and pthread library to the executable
+target_link_libraries(BoundedQueueTest GTest::GTest GTest::Main pthread)
