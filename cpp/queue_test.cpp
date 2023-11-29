@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
     cout << "Queue: popped element " << curPop << endl;
 
     try {
-        for (int i = 0; i < MAX_SIZE + 1; ++i) {
+        for (int i = 0; i < QUEUE_MAX_SIZE_DEFAULT + 1; ++i) {
             q.push(i);
         }
     }

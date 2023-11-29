@@ -8,7 +8,7 @@ using namespace std;
 
 namespace efficient {
     const int32_t INVALID_INDEX = -1;
-    const uint32_t MAX_SIZE = 1024 * 1024;
+    const uint32_t QUEUE_MAX_SIZE_DEFAULT = 1024 * 1024;
 
     // Synchronized bounded queue with composable/chainable functional application
     template<class T, class Lock>
@@ -82,7 +82,7 @@ namespace efficient {
          * SynchronizedQueue copiesQueue(copies);
          */
         SynchronizedQueue(
-                const uint32_t maxSize = MAX_SIZE,
+                const uint32_t maxSize = QUEUE_MAX_SIZE_DEFAULT,
                 const vector<T>& items = vector<T>()
                 ) : mMaxSize(maxSize) {
             mData = make_unique<T[]>(mMaxSize);

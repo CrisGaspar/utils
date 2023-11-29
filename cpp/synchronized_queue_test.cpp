@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
     queue(coutf);
     cout << endl;
 
-    SynchronizedQueue<int, mutex> copyQueue(MAX_SIZE, queue.clone());
+    SynchronizedQueue<int, mutex> copyQueue(QUEUE_MAX_SIZE_DEFAULT, queue.clone());
     assert(copyQueue.clone() == queue.clone());
     // output copied queue items
     cout << "Copied queue items: ";
