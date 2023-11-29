@@ -2,7 +2,7 @@
 #include <functional>
 #include <cassert>
 
-#include "bst.h"
+#include "../include/binary_search_tree.h"
 
 struct Spaceship {
     // ... omitting parameters

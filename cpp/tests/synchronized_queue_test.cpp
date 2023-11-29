@@ -2,7 +2,7 @@
 #include <iostream>
 #include <mutex>
 #include <thread>
-#include "synchronized_queue.h"
+#include "../include/synchronized_queue.h"
 
 using namespace efficient;
 
