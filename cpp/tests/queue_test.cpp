@@ -1,5 +1,5 @@
 #include <iostream>
-#include "bounded_queue.h"
+#include "../include/bounded_queue.h"
 
 using namespace efficient;
 using namespace std;
