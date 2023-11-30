@@ -3,15 +3,17 @@
 #include <cinttypes>
 #include <stdexcept>
 
+using namespace std;
 
 namespace efficient {
     const int32_t INVALID_INDEX = -1;
     const uint32_t QUEUE_MAX_SIZE_DEFAULT = 1024 * 1024;
 
     // Efficient bounded queue implementation with composable/chainable functional application
-    // NOTE: This is not thread-safe. Use SynchronizedQueue for thread-safety.
+    // NOTE: This is not thread-safe. Use SynchronizedBoundedQueue for thread-safety.
     template<class T>
     class bounded_queue {
+    private:
         T* data;
         int32_t first = INVALID_INDEX;
         int32_t last = INVALID_INDEX;
@@ -23,7 +25,7 @@ namespace efficient {
         void updateIndicesForNewElement() {
             if (size() == maxSize) {
                 // no room left
-                throw std::logic_error("BoundedQueue: No room for new element. Already at max capacity");
+                throw logic_error("BoundedQueue: No room for new element. Already at max capacity");
             }
 
             if (first == INVALID_INDEX) {
@@ -71,7 +73,7 @@ namespace efficient {
         T pop() {
             int32_t queueSize = size();
             if (queueSize == 0) {
-                throw std::logic_error("BoundedQueue: Nothing to pop. Empty queue!");
+                throw logic_error("BoundedQueue: Nothing to pop. Empty queue!");
             }
 
             // Oldest elemnent is the first one.
@@ -124,18 +126,18 @@ namespace efficient {
             return *this;
         }
 
-        /** Non-const array-index operator*/
+        /** Non-const array[x] operator*/
         T& operator[](size_t index) {
             if (index >= size()) {
-                throw std::out_of_range("Index out of range");
+                throw out_of_range("Index out of range");
             }
             return data[(first + index) % maxSize];
         }
 
-        /** Const array-index operator*/
+        /** Const array[x] operator*/
         const T& operator[](size_t index) const {
             if (index >= size()) {
-                throw std::out_of_range("Index out of range");
+                throw out_of_range("Index out of range");
             }
             return data[(first + index) % maxSize];
         }
