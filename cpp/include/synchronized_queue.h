@@ -11,8 +11,11 @@ namespace efficient {
     const uint32_t QUEUE_MAX_SIZE_DEFAULT = 1024 * 1024;
 
     // Synchronized bounded queue with composable/chainable functional application
+    // The 2 type parameters are: 
+    // 1. type T of the elements in the queue
+    // 2. type Lock of the mutex used to synchronize access to the queue
     template<class T, class Lock>
-    class SynchronizedQueue {
+    class SynchronizedBoundedQueue {
     private:
         unique_ptr<T[]> mData;  ///< fixed sized array that holds the queue items
                                 // Fixed size is used to maximize cache efficiency
@@ -26,7 +29,7 @@ namespace efficient {
         // and mLastIndex.
         // The mData array is pre-allocated and is used in a circular fashion meaning
         // the indices wrap-arround past end and beginning if necessary
-        // e.g: if max size was 3 and we enqueue 2, 3, 1,  dequeue, then enqueue 5
+        // e.g: if maximum size was 3 and we enqueue 2, 3, 1,  dequeue, then enqueue 5
         // the final array would be:
         // 5, 3, 1 with mFirstIndex = 1 and mLastIndex = 0
         int32_t mFirstIndex = INVALID_INDEX;
@@ -35,12 +38,13 @@ namespace efficient {
         int32_t mMaxSize = 0;   ///< maximum size of the queue
 
         /*
-         * Enqueue and dequeue helper methods
+         * Enqueue helper method
+         * NOTE: Assumes lock is already acquired before calling this method
          */
         void enqueue_nolock() {
             if (mSize == mMaxSize) {
                 // cannot accomodate new element
-                throw logic_error("SynchronizedQueue: already at max capacity");
+                throw logic_error("SynchronizedBoundedQueue: already at max capacity");
             }
 
             if (mFirstIndex == INVALID_INDEX) {
@@ -54,9 +58,13 @@ namespace efficient {
             ++mSize;
         }
 
+        /**
+         * Dequeue helper method.
+         * NOTE: Assumes lock is already acquired before calling this method
+        */
         T dequeue_nolock() {
             if (mSize == 0) {
-                throw logic_error("Queue: can't dequeue empty queue!");
+                throw logic_error("SynchronizedBoundedQueue: Nothing to pop. Empty queue");
             }
 
             int32_t index = mFirstIndex;
@@ -70,8 +78,8 @@ namespace efficient {
             }
             --mSize;
 
-            // Use STL move to steal this reference
-            return move(mData[index]);
+            // Use STL move to steal this reference and void copying the element
+            return std::move(mData[index]);
         }
 
      public:
@@ -81,7 +89,7 @@ namespace efficient {
          * auto copies = otherQueue.clone();
          * SynchronizedQueue copiesQueue(copies);
          */
-        SynchronizedQueue(
+        SynchronizedBoundedQueue(
                 const uint32_t maxSize = QUEUE_MAX_SIZE_DEFAULT,
                 const vector<T>& items = vector<T>()
                 ) : mMaxSize(maxSize) {
@@ -91,7 +99,7 @@ namespace efficient {
             }
         }
 
-        ~SynchronizedQueue() { clear(); }
+        ~SynchronizedBoundedQueue() { clear(); }
 
         /*
          * Delete copy and move constructor and assignment.
@@ -105,7 +113,7 @@ namespace efficient {
          * Deadlock would occur as each would hold its own lock and block on
          * the other's lock indefinitely
          *
-         * Instead if the items need to be copied use the clone() method
+         * If the items need to be copied use the clone() method
          * below to get a vector<T> of item copies and use the regular constructor
          * auto copies = otherQueue.clone();
          * SynchronizedQueue copiesQueue(copies);
@@ -113,24 +121,22 @@ namespace efficient {
          */
 
         // copy constructor
-        SynchronizedQueue(const SynchronizedQueue<T, Lock>& other) = delete;
+        SynchronizedBoundedQueue(const SynchronizedBoundedQueue<T, Lock>& other) = delete;
         // move constructor
-        SynchronizedQueue(SynchronizedQueue<T, Lock>&& other) = delete;
+        SynchronizedBoundedQueue(SynchronizedBoundedQueue<T, Lock>&& other) = delete;
 
         // copy assignment
-        SynchronizedQueue& operator=(SynchronizedQueue<T, Lock>& other) = delete;
+        SynchronizedBoundedQueue& operator=(SynchronizedBoundedQueue<T, Lock>& other) = delete;
         // move assignment
-        SynchronizedQueue& operator=(SynchronizedQueue<T, Lock>&& other) = delete;
+        SynchronizedBoundedQueue& operator=(SynchronizedBoundedQueue<T, Lock>&& other) = delete;
 
         /*
          * Clone returns a vector of copies of the items in the queue
          */
         vector<T> clone() {
             vector<T> copiedValues;
-            copiedValues.reserve(size());
-
-            // Create a lambda copy function to insert into copied Values and
-            // apply it to all items in queue via overloaded operator()
+            // Create an anonymous function to insert into copied Values and
+            // apply it to all items in queue via overloaded operator() which uses is synchronized via lock
             this->operator()([&copiedValues](const T& item) { copiedValues.push_back(item); });
             return copiedValues;
         }
@@ -140,60 +146,82 @@ namespace efficient {
         }
 
         /*
-         * An enqueue for Rvalue references: for efficiency reasons
-         */
+         *  Enqueues an element by moving it which avoids copying it
+        */
         void enqueue(T&& elem) {
             LockGuard guard(mLock);
             enqueue_nolock();
 
-            // Use STL move to steal the contents of the rvalue
-            mData[mLastIndex] = move(elem);
+            // Use STL move to steal the contents of the rvalue and avoid copying
+            mData[mLastIndex] = std::move(elem);
         }
 
+        /** Enqueues an element by copying it*/
         void enqueue(const T& elem) {
             LockGuard guard(mLock);
             enqueue_nolock();
             mData[mLastIndex] = elem;
         }
 
+        /**
+         *  Removes the oldest element from the queue
+        */
         T dequeue() {
             LockGuard guard(mLock);
             return dequeue_nolock();
         }
 
         /*
-         * Pops all elements off the qeueue
+         * Removes all elements from the queue
          */
         void clear() {
             LockGuard guard(mLock);
-            while(mFirstIndex != INVALID_INDEX) {
+            while(size() != 0) {
                 dequeue_nolock();
             }
+        }
+
+
+        /** Non-const array[x] operator*/
+        T& operator[](size_t index) {
+            LockGuard guard(mLock);
+            if (index >= size()) {
+                throw out_of_range("Index out of range");
+            }
+            return mData[(mFirstIndex + index) % mMaxSize];
+        }
+
+        /** Const array[x] operator*/
+        const T& operator[](size_t index) const {
+            LockGuard guard(mLock);
+            if (index >= size()) {
+                throw out_of_range("Index out of range");
+            }
+            return mData[(mFirstIndex + index) % mMaxSize];
         }
 
         /*
          * Overload operator() to support application of composable functions
          * that are applied to each element in the queue
-         * E.g: f could be a cout-like lambda function that prints the element it is given
+         * E.g: func could be a cout-like lambda function that prints the element it is given
          * Returns this queue to allow calls to be composed
-         * e.g: queue(f1)(f2) which would apply function f1 to the elements
+         * e.g: queue(f1)(f2) which would apply function f1 to all elements
          * then apply function f2 to all elements
          */
         template<class UnaryFunction>
-        SynchronizedQueue<T, Lock>& operator()(UnaryFunction f) {
+        SynchronizedBoundedQueue<T, Lock>& operator()(UnaryFunction func) {
+            LockGuard guard(mLock);
             if (mSize == 0) {
-                // Return this queue to allow calls to be composed
+                // Don't throw. Return this queue to allow calls to be composed
                 return *this;
             }
-
-            LockGuard guard(mLock);
-            for (int32_t i = mFirstIndex; i != mLastIndex; i = (i + 1) % mMaxSize) {
-                f(mData[i]);
+            for (int32_t index = mFirstIndex; index != mLastIndex; index = (index + 1) % mMaxSize) {
+                func(mData[index]);
             }
 
             // Apply function to last element as a separate step
             // Necessary since the queue uses the mData array in a circular fashion
-            f(mData[mLastIndex]);
+            func(mData[mLastIndex]);
 
             // Return this queue to allow calls to be composed
             return *this;

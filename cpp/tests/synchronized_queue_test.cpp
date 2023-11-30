@@ -1,3 +1,4 @@
+#include <gtest/gtest.h>
 #include <cassert>
 #include <iostream>
 #include <mutex>
@@ -5,62 +6,57 @@
 #include "../include/synchronized_queue.h"
 
 using namespace efficient;
+using namespace std;
 
-int main(int argc, char** argv) {
-    SynchronizedQueue<int, mutex> queue;
+auto DOUBLE_FUNC = [](int32_t&value) { value *= 2; };
+auto decrementFunc = [](int32_t& value) { --value; };
 
-    // Use a lambda to define the operations performed on the same
-    // queue by each thread separately
-    auto playWithQueue = [&queue] () {
-        for (int i = 0; i < 10000; ++i) {
-            // Perform a few queue operations
-            queue.enqueue(i);
-            queue.enqueue(2*i);
-            queue.dequeue();
-        }
-    };
+auto THREADS_NUM = 10;
+auto THREADS_ACTIVE = vector<bool>(THREADS_NUM, false); 
 
-    uint32_t threadNum = 10;
+TEST(SynchronizedBoundedQueueTest, MultipleThreadsTest) {
+    SynchronizedBoundedQueue<int, mutex> queue;
     vector<thread> threads;
-    threads.reserve(threadNum);
-    for (int j = 0; j < threadNum; ++j) {
-        // Setup each thread to execute the lambda function that performs the
-        // queue operations
-        threads[j] = thread(playWithQueue);
+
+    for (int threadIndex = 0; threadIndex < THREADS_NUM; ++threadIndex) {
+        // Use a lambda to define the operations performed on the same
+        // queue by each thread separately
+        auto playWithQueue = [&queue] (int threadIndex) {
+            THREADS_ACTIVE[threadIndex] = true;
+            for (int queueIndex = 0; queueIndex < 10000; ++queueIndex) {
+                // Perform a few queue operations
+                queue.enqueue(queueIndex);
+                queue.enqueue(2*queueIndex);
+                queue.dequeue();
+            }
+            THREADS_ACTIVE[threadIndex] = false;
+        };
+        // Setup each thread to execute the function that performs the queue operations
+        threads.push_back(thread(playWithQueue, threadIndex));
     }
 
-    for (int j = 0; j < threadNum; ++j) {
-        threads[j].join();
+    for (int threadIndex = 0; threadIndex < THREADS_NUM; ++threadIndex) {
+        threads[threadIndex].join();
     }
-    cout << "Threads finished! Queue contents" << endl;
 
-    // Create lambdas: to print an integer, to double an integer
-    auto coutf = [](int32_t& n) { cout << n << " "; };
-    auto doubleIt = [](int32_t&n) { n *= 2; };
+    // Wait until all threads have completed
+    for (int threadIndex = 0; threadIndex < THREADS_NUM; ++threadIndex) {
+        EXPECT_FALSE(THREADS_ACTIVE[threadIndex]);
+    }
 
-    // Double the value of each queue item and output the final state.
-    // Lambdas are applied to each item using the overloaded operator().
-    queue(doubleIt)(coutf);
-    cout << endl;
+    auto elements = queue.clone();
+    queue(DOUBLE_FUNC)(decrementFunc);
+    EXPECT_EQ(queue.size(), elements.size());
 
-    // Now let's test copying via clone.
-    // Reset and do some queue operations
-    queue.clear();
-    queue.enqueue(10);
-    queue.enqueue(20);
-    queue.enqueue(30);
-    queue.dequeue();
-    queue.dequeue();
-    queue.enqueue(40);
-    cout << "Source queue items to copied: ";
-    queue(coutf);
-    cout << endl;
+    auto index = 0;
+    for(auto element : elements) {
+        auto expectedValue = 2 * element - 1;
+        EXPECT_EQ(expectedValue, queue[index]);
+        ++index;
+    }
+}
 
-    SynchronizedQueue<int, mutex> copyQueue(QUEUE_MAX_SIZE_DEFAULT, queue.clone());
-    assert(copyQueue.clone() == queue.clone());
-    // output copied queue items
-    cout << "Copied queue items: ";
-    copyQueue(coutf);
-    cout << endl;
-    return 0;
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
