@@ -1,7 +1,0 @@
-{
-  "type": "module",
-  "dependencies": {
-    "export-to-csv": "^1.2.4",
-    "puppeteer": "^22.4.1"
-  }
-}
